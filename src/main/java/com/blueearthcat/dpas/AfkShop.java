@@ -50,7 +50,7 @@ public class AfkShop extends DPlugin {
     public void onLoad() {
         DPASFunction.placeholderInit();
         shops = loadDataContainer(new DataContainer<>(this, DataType.YAML, "shops"));
-        afkuser = loadDataContainer(new DataContainer<>(this, DataType.USER, "afkuser"));
+        afkuser = loadDataContainer(new DataContainer<>(this, DataType.CUSTOM, "afkuser"), AFKUser.class);
 //        udata = loadDataContainer(new DataContainer<>(this, DataType.YAML, "udata"));
         PluginUtil.addPlugin(plugin, 26098);
     }
