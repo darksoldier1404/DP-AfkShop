@@ -1,8 +1,8 @@
 name: DP-AfkShop
-version: 2.0.0
+version: 2.1.0
 main: com.blueearthcat.dpas.AfkShop
-api-version: 1.16
-authors: [ BlueEarthCat ]
+api-version: 1.20
+authors: [ BlueEarthCat, DEAD_POOLIO_ ]
 depend:
   - DPP-Core
   - PlaceholderAPI
