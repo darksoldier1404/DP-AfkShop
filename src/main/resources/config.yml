@@ -1,0 +1,7 @@
+Settings:
+  prefix: "&f[ &eDP-AFKShop &f] "
+  Lang: en_US
+
+  AfkPointPerInterval:
+    TimeInSeconds: 1
+    PointAmount: 1
