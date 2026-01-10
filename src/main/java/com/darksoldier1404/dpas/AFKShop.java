@@ -29,7 +29,7 @@ public class AFKShop extends DPlugin {
     public static final Map<UUID, Tuple<Location, Location>> areaSetMode = new HashMap<>();
 
     public AFKShop() {
-        super(false);
+        super(true);
         plugin = this;
         init();
     }

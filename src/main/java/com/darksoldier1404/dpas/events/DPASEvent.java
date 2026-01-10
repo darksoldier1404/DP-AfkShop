@@ -61,7 +61,7 @@ public class DPASEvent implements Listener {
                     DInventory.PageItemSet pis = e.getPageItemSet();
                     Tuple<PointShop, DInventory.PageItemSet> tpl = Tuple.of((PointShop) inv.getObj(), pis);
                     AFKShop.currentPriceEdit.put(p.getUniqueId(), tpl);
-                    p.sendMessage(AFKShop.getInstance().getPrefix() + "§a아이템의 가격을 설정하려면 채팅창에 가격을 입력해주세요.");
+                    p.sendMessage(AFKShop.getInstance().getPrefix() + AFKShop.getInstance().getLang().get("item_price_set_chat"));
                     p.closeInventory();
                 }
             }
@@ -79,7 +79,7 @@ public class DPASEvent implements Listener {
                 shop.setInventory(inv);
                 AFKShop.data.put(shop.getName(), shop);
                 AFKShop.data.save(shop.getName());
-                p.sendMessage(AFKShop.getInstance().getPrefix() + "§a아이템이 저장되었습니다.");
+                p.sendMessage(AFKShop.getInstance().getPrefix() + AFKShop.getInstance().getLang().get("item_saved"));
             }
         }
     }
@@ -94,7 +94,7 @@ public class DPASEvent implements Listener {
             try {
                 int price = Integer.parseInt(msg);
                 if (price < 0) {
-                    p.sendMessage(AFKShop.getInstance().getPrefix() + "§c가격은 0 이상의 숫자여야 합니다.");
+                    p.sendMessage(AFKShop.getInstance().getPrefix() + AFKShop.getInstance().getLang().get("price_must_be_positive"));
                     return;
                 }
                 DInventory.PageItemSet pis = tpl.getB();
@@ -110,11 +110,11 @@ public class DPASEvent implements Listener {
                     shop.getPriceList().add(sp);
                 }
                 shop.getPriceList().add(sp);
-                p.sendMessage(AFKShop.getInstance().getPrefix() + "§a아이템의 가격이 §f" + price + "§a로 설정되었습니다.");
+                p.sendMessage(AFKShop.getInstance().getPrefix() + AFKShop.getInstance().getLang().getWithArgs("item_price_set_to", String.valueOf(price)));
                 AFKShop.currentPriceEdit.remove(p.getUniqueId());
                 Bukkit.getScheduler().runTaskLater(AFKShop.getInstance(), () -> shop.openPriceEditor(p), 1L);
             } catch (NumberFormatException ex) {
-                p.sendMessage(AFKShop.getInstance().getPrefix() + "§c유효한 숫자를 입력해주세요.");
+                p.sendMessage(AFKShop.getInstance().getPrefix() + AFKShop.getInstance().getLang().get("enter_valid_number"));
             }
         }
     }
@@ -127,12 +127,12 @@ public class DPASEvent implements Listener {
                 e.setCancelled(true);
                 Tuple<Location, Location> tpl = AFKShop.areaSetMode.get(p.getUniqueId());
                 tpl.setA(e.getClickedBlock().getLocation());
-                p.sendMessage(AFKShop.getInstance().getPrefix() + "§a첫 번째 위치가 설정되었습니다. (" + tpl.getA().getBlockX() + ", " + tpl.getA().getBlockY() + ", " + tpl.getA().getBlockZ() + ")");
+                p.sendMessage(AFKShop.getInstance().getPrefix() + AFKShop.getInstance().getLang().getWithArgs("first_location_set", String.valueOf(tpl.getA().getBlockX()), String.valueOf(tpl.getA().getBlockY()), String.valueOf(tpl.getA().getBlockZ())));
             } else if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 e.setCancelled(true);
                 Tuple<Location, Location> tpl = AFKShop.areaSetMode.get(p.getUniqueId());
                 tpl.setB(e.getClickedBlock().getLocation());
-                p.sendMessage(AFKShop.getInstance().getPrefix() + "§a두 번째 위치가 설정되었습니다. (" + tpl.getB().getBlockX() + ", " + tpl.getB().getBlockY() + ", " + tpl.getB().getBlockZ() + ")");
+                p.sendMessage(AFKShop.getInstance().getPrefix() + AFKShop.getInstance().getLang().getWithArgs("second_location_set", String.valueOf(tpl.getB().getBlockX()), String.valueOf(tpl.getB().getBlockY()), String.valueOf(tpl.getB().getBlockZ())));
             }
         }
     }
