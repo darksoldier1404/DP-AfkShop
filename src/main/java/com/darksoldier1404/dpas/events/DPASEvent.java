@@ -10,10 +10,13 @@ import com.darksoldier1404.dppc.events.dinventory.DInventoryClickEvent;
 import com.darksoldier1404.dppc.events.dinventory.DInventoryCloseEvent;
 import com.darksoldier1404.dppc.utils.Tuple;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -112,6 +115,24 @@ public class DPASEvent implements Listener {
                 Bukkit.getScheduler().runTaskLater(AFKShop.getInstance(), () -> shop.openPriceEditor(p), 1L);
             } catch (NumberFormatException ex) {
                 p.sendMessage(AFKShop.getInstance().getPrefix() + "§c유효한 숫자를 입력해주세요.");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent e) {
+        Player p = e.getPlayer();
+        if (AFKShop.areaSetMode.containsKey(p.getUniqueId()) && e.getClickedBlock() != null) {
+            if (e.getAction() == Action.LEFT_CLICK_BLOCK) {
+                e.setCancelled(true);
+                Tuple<Location, Location> tpl = AFKShop.areaSetMode.get(p.getUniqueId());
+                tpl.setA(e.getClickedBlock().getLocation());
+                p.sendMessage(AFKShop.getInstance().getPrefix() + "§a첫 번째 위치가 설정되었습니다. (" + tpl.getA().getBlockX() + ", " + tpl.getA().getBlockY() + ", " + tpl.getA().getBlockZ() + ")");
+            } else if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                e.setCancelled(true);
+                Tuple<Location, Location> tpl = AFKShop.areaSetMode.get(p.getUniqueId());
+                tpl.setB(e.getClickedBlock().getLocation());
+                p.sendMessage(AFKShop.getInstance().getPrefix() + "§a두 번째 위치가 설정되었습니다. (" + tpl.getB().getBlockX() + ", " + tpl.getB().getBlockY() + ", " + tpl.getB().getBlockZ() + ")");
             }
         }
     }

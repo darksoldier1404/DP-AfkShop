@@ -2,13 +2,16 @@ package com.darksoldier1404.dpas.functions;
 
 
 import com.darksoldier1404.dpas.AFKShop;
+import com.darksoldier1404.dpas.area.AFKArea;
 import com.darksoldier1404.dpas.shop.PointShop;
 import com.darksoldier1404.dpas.user.AFKUser;
 import com.darksoldier1404.dppc.api.inventory.DInventory;
 import com.darksoldier1404.dppc.api.placeholder.PlaceholderBuilder;
 import com.darksoldier1404.dppc.api.worldguard.WorldGuardAPI;
 import com.darksoldier1404.dppc.utils.InventoryUtils;
+import com.darksoldier1404.dppc.utils.Tuple;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -110,17 +113,6 @@ public class DPASFunction {
         }
     }
 
-    public static void addWorldGuardWorld(Player p, String name, World world) {
-        // using config
-        if (world == null) {
-            world = p.getWorld();
-        }
-        AFKShop.getInstance().getConfig().set("WorldGuardAreas." + world.getName() + "." + name, true);
-        AFKShop.getInstance().saveConfig();
-        p.sendMessage(plugin.getPrefix() + "§a구역이 성공적으로 추가되었습니다: §f" + world.getName() + "§a - §f" + name);
-        refreshAllTasks();
-    }
-
     public static void refreshAllTasks() {
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (AFKShop.currentAFKTasks.containsKey(p.getUniqueId())) {
@@ -136,28 +128,21 @@ public class DPASFunction {
             task.cancel();
         }
         task = Bukkit.getScheduler().runTaskTimer(plugin, () -> Bukkit.getOnlinePlayers().forEach(p -> {
-            if (AFKShop.getInstance().getConfig().getConfigurationSection("WorldGuardAreas") == null) return;
-            for (String worldName : AFKShop.getInstance().getConfig().getConfigurationSection("WorldGuardAreas").getKeys(false)) {
-                World world = Bukkit.getWorld(worldName);
-                if (world != null && p.getWorld().getName().equalsIgnoreCase(world.getName())) {
-                    if (AFKShop.getInstance().getConfig().getConfigurationSection("WorldGuardAreas." + worldName) == null)
-                        continue;
-                    for (String regionName : AFKShop.getInstance().getConfig().getConfigurationSection("WorldGuardAreas." + worldName).getKeys(false)) {
-                        if (WorldGuardAPI.isPlayerInRegion(p, regionName)) {
-                            if (AFKShop.currentAFKTasks.containsKey(p.getUniqueId())) continue;
-                            BukkitTask afkTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-                                AFKUser user = AFKShop.udata.get(p.getUniqueId());
-                                user.addAfkPoints(getAfkPointAmount());
-                                AFKShop.udata.put(p.getUniqueId(), user);
-                                Bukkit.getPlayer(user.getUUID()).sendMessage(plugin.getPrefix() + "§a잠수 포인트 §f" + getAfkPointAmount() + "§a점을 획득하였습니다! 현재 포인트: §f" + user.getPoint() + "§a점.");
-                            }, getAfkPointIntervalTime() * 20L, getAfkPointIntervalTime() * 20L);
-                            AFKShop.currentAFKTasks.put(p.getUniqueId(), afkTask);
-                        } else {
-                            if (AFKShop.currentAFKTasks.containsKey(p.getUniqueId())) {
-                                AFKShop.currentAFKTasks.get(p.getUniqueId()).cancel();
-                                AFKShop.currentAFKTasks.remove(p.getUniqueId());
-                            }
-                        }
+            for (AFKArea area : AFKShop.areas.values()) {
+                if (area.isInArea(p)) {
+                    if (AFKShop.currentAFKTasks.containsKey(p.getUniqueId())) continue;
+                    BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+                        AFKUser user = AFKShop.udata.get(p.getUniqueId());
+                        int pointAmount = getAfkPointAmount();
+                        user.addAfkPoints(pointAmount);
+                        AFKShop.udata.put(p.getUniqueId(), user);
+                        p.sendMessage(plugin.getPrefix() + "§a잠수 포인트 §f" + pointAmount + "§a점을 획득하였습니다! 현재 포인트: §f" + user.getPoint() + "§a점.");
+                    }, 0L, getAfkPointIntervalTime() * 20L);
+                    AFKShop.currentAFKTasks.put(p.getUniqueId(), task);
+                } else {
+                    if (AFKShop.currentAFKTasks.containsKey(p.getUniqueId())) {
+                        AFKShop.currentAFKTasks.get(p.getUniqueId()).cancel();
+                        AFKShop.currentAFKTasks.remove(p.getUniqueId());
                     }
                 }
             }
@@ -191,6 +176,69 @@ public class DPASFunction {
         } else {
             PointShop shop = AFKShop.data.get(name);
             shop.openShop(p);
+        }
+    }
+
+
+    /// area functions
+
+    public static boolean isExistingArea(String name) {
+        return AFKShop.areas.containsKey(name);
+    }
+
+    public static void addArea(Player p, String areaName) {
+        if (isExistingArea(areaName)) {
+            p.sendMessage(plugin.getPrefix() + "§c이미 존재하는 잠수지역 이름입니다.");
+        } else {
+            AFKArea area = new AFKArea();
+            area.setName(areaName);
+            AFKShop.areas.put(areaName, area);
+            AFKShop.areas.save(areaName);
+            p.sendMessage(plugin.getPrefix() + "§a잠수지역 §f" + areaName + "§a(이)가 성공적으로 추가되었습니다.");
+            p.sendMessage(plugin.getPrefix() + "§a이후에 /dpas setloc <areaname> 명령어로 위치를 설정해주세요.");
+        }
+    }
+
+    public static void switchAreaSetMode(Player p) {
+        if (AFKShop.areaSetMode.containsKey(p.getUniqueId())) {
+            AFKShop.areaSetMode.remove(p.getUniqueId());
+            p.sendMessage(plugin.getPrefix() + "§a잠수지역 설정 모드가 비활성화되었습니다.");
+        } else {
+            AFKShop.areaSetMode.put(p.getUniqueId(), Tuple.of(null, null));
+            p.sendMessage(plugin.getPrefix() + "§a잠수지역 설정 모드가 활성화되었습니다. 이제 위치를 설정해주세요.");
+        }
+    }
+
+    public static void setAreaLocation(Player p, String areaName) {
+        if (!isExistingArea(areaName)) {
+            p.sendMessage(plugin.getPrefix() + "§c존재하지 않는 잠수지역 이름입니다.");
+        } else {
+            AFKArea area = AFKShop.areas.get(areaName);
+            Tuple<Location, Location> locs = AFKShop.areaSetMode.get(p.getUniqueId());
+            if (locs == null) {
+                p.sendMessage(plugin.getPrefix() + "§c먼저 잠수지역 설정 모드를 활성화하고 위치를 설정해주세요.");
+                return;
+            }
+            if (locs.getA() == null || locs.getB() == null) {
+                p.sendMessage(plugin.getPrefix() + "§c잠수지역의 두 지점이 모두 설정되어야 합니다.");
+                return;
+            }
+            area.setPos1(locs.getA());
+            area.setPos2(locs.getB());
+            AFKShop.areas.put(areaName, area);
+            AFKShop.areas.save(areaName);
+            p.sendMessage(plugin.getPrefix() + "§a잠수지역 §f" + areaName + "§a의 위치가 성공적으로 설정되었습니다.");
+            switchAreaSetMode(p);
+        }
+    }
+
+    public static void deleteArea(Player p, String areaName) {
+        if (!isExistingArea(areaName)) {
+            p.sendMessage(plugin.getPrefix() + "§c존재하지 않는 잠수지역 이름입니다.");
+        } else {
+            AFKShop.areas.delete(areaName);
+            AFKShop.areas.remove(areaName);
+            p.sendMessage(plugin.getPrefix() + "§a잠수지역 §f" + areaName + "§a(이)가 성공적으로 삭제되었습니다.");
         }
     }
 }

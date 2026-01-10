@@ -70,14 +70,38 @@ public class DPASCommand {
                     return true;
                 });
 
-        builder.beginSubCommand("wgadd", "/dpas wgadd <world> <region> - Add a world to the AFK Point WG list")
+        // not worldguard api
+        builder.beginSubCommand("areaadd", "/dpas areaadd <areaName> - Add a area for AFK Point accumulation")
                 .withPermission("dpas.admin")
-                .withArgument(ArgumentIndex.ARG_0, ArgumentType.WORLD)
-                .withArgument(ArgumentIndex.ARG_1, ArgumentType.STRING, (p, args) -> WorldGuardAPI.getAllRegions(Bukkit.getWorld(args[1])))
+                .withArgument(ArgumentIndex.ARG_0, ArgumentType.STRING)
                 .executesPlayer((p, args) -> {
-                    World world = args.getWorld(ArgumentIndex.ARG_0);
-                    String name = args.getString(ArgumentIndex.ARG_1);
-                    DPASFunction.addWorldGuardWorld(p, name, world);
+                    String name = args.getString(ArgumentIndex.ARG_0);
+                    DPASFunction.addArea(p, name);
+                    return true;
+                });
+
+        builder.beginSubCommand("arearemove", "/dpas arearemove <areaName> - Remove a area for AFK Point accumulation")
+                .withPermission("dpas.admin")
+                .withArgument(ArgumentIndex.ARG_0, ArgumentType.STRING, AFKShop.areas.keySet())
+                .executesPlayer((p, args) -> {
+                    String name = args.getString(ArgumentIndex.ARG_0);
+                    DPASFunction.deleteArea(p, name);
+                    return true;
+                });
+
+        builder.beginSubCommand("areamode", "/dpas areamode - Toggle area selection mode for defining AFK Point accumulation areas")
+                .withPermission("dpas.admin")
+                .executesPlayer((p, args) -> {
+                    DPASFunction.switchAreaSetMode(p);
+                    return true;
+                });
+
+        builder.beginSubCommand("areaset", "/dpas areaset <areaName> - Set the selected area for AFK Point accumulation")
+                .withPermission("dpas.admin")
+                .withArgument(ArgumentIndex.ARG_0, ArgumentType.STRING, AFKShop.areas.keySet())
+                .executesPlayer((p, args) -> {
+                    String name = args.getString(ArgumentIndex.ARG_0);
+                    DPASFunction.setAreaLocation(p, name);
                     return true;
                 });
 
