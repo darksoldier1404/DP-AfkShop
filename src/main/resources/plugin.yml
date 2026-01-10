@@ -5,7 +5,6 @@ authors: [ DEAD_POOLIO_ ]
 api-version: 1.20
 depend:
   - DPP-Core
-  - WorldGuard
   - PlaceholderAPI
 commands:
   dpas:
