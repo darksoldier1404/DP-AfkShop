@@ -97,7 +97,7 @@ public class PointShop implements DataCargo {
             ItemMeta im = item.getItemMeta();
             List<String> lore = im.getLore() == null ? new ArrayList<>() : im.getLore();
             if (price > 0) {
-                lore.add("§e가격: §f" + price + " 포인트");
+                lore.add(AFKShop.getInstance().getLang().getWithArgs("price_lore", String.valueOf(price)));
                 im.setLore(lore);
                 item.setItemMeta(im);
             }
@@ -121,7 +121,7 @@ public class PointShop implements DataCargo {
     @Override
     public PointShop deserialize(YamlConfiguration data) {
         this.name = data.getString("name");
-        this.inventory = new DInventory("AFK Shop : " + name, 54, true, true, AFKShop.getInstance());
+        this.inventory = new DInventory(AFKShop.getInstance().getLang().getWithArgs("shop_title", name), 54, true, true, AFKShop.getInstance());
         inventory.deserialize(data);
         if (data.contains("ShopPrice")) {
             for (String pageKey : data.getConfigurationSection("ShopPrice").getKeys(false)) {
