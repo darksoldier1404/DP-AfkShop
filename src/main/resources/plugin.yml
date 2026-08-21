@@ -6,5 +6,7 @@ api-version: 1.20
 depend:
   - DPP-Core
   - PlaceholderAPI
+  - Multiverse-Core
+  - BentoBox
 commands:
   dpas:

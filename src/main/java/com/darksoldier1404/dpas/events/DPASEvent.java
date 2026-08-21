@@ -25,7 +25,12 @@ public class DPASEvent implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         if (!AFKShop.udata.containsKey(p.getUniqueId())) {
-            AFKUser user = new AFKUser(p.getUniqueId(), 0, 0);
+            AFKUser user = new AFKUser(p.getUniqueId(), p.getName(), 0, 0, 0);
+            AFKShop.udata.put(p.getUniqueId(), user);
+            AFKShop.udata.save(p.getUniqueId());
+        } else {
+            AFKUser user = AFKShop.udata.get(p.getUniqueId());
+            user.setName(p.getName());
             AFKShop.udata.put(p.getUniqueId(), user);
             AFKShop.udata.save(p.getUniqueId());
         }

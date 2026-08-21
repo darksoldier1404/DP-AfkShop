@@ -27,6 +27,7 @@ public class AFKShop extends DPlugin {
     public static final Map<UUID, Tuple<PointShop, DInventory.PageItemSet>> currentPriceEdit = new HashMap<>();
     public static final Map<UUID, BukkitTask> currentAFKTasks = new HashMap<>();
     public static final Map<UUID, Tuple<Location, Location>> areaSetMode = new HashMap<>();
+    public static List<Map.Entry<UUID, AFKUser>> sort = new ArrayList<>();
 
     public AFKShop() {
         super(true);
@@ -41,7 +42,6 @@ public class AFKShop extends DPlugin {
     @Override
     public void onLoad() {
         PluginUtil.addPlugin(plugin, 26098);
-        areas = loadDataContainer(new DataContainer<>(this, DataType.CUSTOM, "areas"), AFKArea.class);
         data = loadDataContainer(new DataContainer<>(this, DataType.CUSTOM, "shops"), PointShop.class);
         udata = loadDataContainer(new DataContainer<>(this, DataType.CUSTOM, "users"), AFKUser.class);
         DPASFunction.initPlaceholder();
@@ -49,6 +49,7 @@ public class AFKShop extends DPlugin {
 
     @Override
     public void onEnable() {
+        areas = loadDataContainer(new DataContainer<>(this, DataType.CUSTOM, "areas"), AFKArea.class);
         getServer().getPluginManager().registerEvents(new DPASEvent(), plugin);
         DPASCommand.init();
         DPASFunction.initTask();
